@@ -5,7 +5,6 @@ from processor import fetch_employee_data, normalize_data, save_data
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def lambdaHandler(event, context):
-    """AWS Lambda Handler Function"""
     scraper_info = event.get("scraper_input", {})
     scraper_name = scraper_info.get("scraper_name", "unknown_scraper")
     run_id = scraper_info.get("run_scraper_id", "000")

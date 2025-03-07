@@ -6,7 +6,6 @@ from config import API_URL, RETRY_COUNT, TIMEOUT
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def fetch_employee_data():
-    """Fetch employee data from API with retry and error handling."""
     attempt = 0
 
     while attempt < RETRY_COUNT:

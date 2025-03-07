@@ -158,7 +158,6 @@ class TestEmployeeScraper(unittest.TestCase):
         self.assertIsNone(result, "Should handle malformed data gracefully")
         
         # Test with more complete but still missing some fields
-        # Include all fields that are directly accessed in normalize_data
         incomplete_data = {
             "employees": [
                 {
