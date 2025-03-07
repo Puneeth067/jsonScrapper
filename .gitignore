@@ -22,10 +22,9 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Project specific
-ingestion/
-*.csv
-*.parquet
+# Project specific - keep folder structure but ignore contents
+ingestion/*
+!ingestion/.gitkeep
 
 # Logs
 *.log
