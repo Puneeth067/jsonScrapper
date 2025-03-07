@@ -61,8 +61,7 @@ def normalize_data(data):
     for col in string_columns:
         df[col] = df[col].fillna("").astype(str)
     
-    # Convert phone to int where possible, otherwise keep as string
-    # Since "Invalid Number" can't be converted to int, we'll keep phone as string
+    # Convert phone to int where possible, otherwise keep as Invalid Number which is string
     df["phone"] = df["phone"].astype(str)
     df = df.drop(columns=["first_name", "last_name"], errors="ignore")
 
