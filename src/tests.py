@@ -59,7 +59,7 @@ class TestEmployeeScraper(unittest.TestCase):
     
     def test_normalize_data(self):
         """Test the data normalization process."""
-        # Sample employee data for testing
+        # Sample employee json data for testing
         sample_data = {
             "employees": [
                 {

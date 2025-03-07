@@ -28,7 +28,7 @@ def fetch_employee_data():
             logging.warning("API returned a file, attempting to parse as JSON.")
             json_data = json.loads(response.text)
             
-            # Check if it's already a list, wrap it in a dict with 'employees' key
+            # Check if it's already a list, wrap it in a dict with 'employees' key since we need it in json format
             if isinstance(json_data, list):
                 return {"employees": json_data}
             return json_data
