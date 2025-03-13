@@ -10,12 +10,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 def fetch_data(source_id):
     """
     Fetch data from specified source and save the raw file to ingestion directory.
-    
-    Args:
-        source_id (str): The ID of the source from API_SOURCES config
-        
-    Returns:
-        str: Path to the downloaded file or None if failed
     """
     if source_id not in API_SOURCES:
         logging.error(f"Source ID '{source_id}' not found in configuration.")
@@ -80,9 +74,31 @@ def read_data_file(file_path):
                     return {"employees": data}
                 return data
                 
-        elif file_extension == '.csv':
-            return pd.read_csv(file_path)
-            
+        elif file_extension == ".csv":
+            try:
+                # Open the file manually to check the first few lines before passing it to Pandas
+                with open(file_path, "r", encoding="utf-8") as f:
+                    lines = [line.strip() for line in f.readlines()]
+
+                # If the file is empty or has only a single row (header with no data), return None
+                if not lines or len(lines) < 2:
+                    logging.error(f"CSV file {file_path} is empty or contains only a header.")
+                    return None
+
+                # Load CSV into a DataFrame
+                df = pd.read_csv(file_path, dtype=str, on_bad_lines="skip")
+
+                # Ensure valid CSV: must have at least 2 columns and 2 rows (header + 1 row of data)
+                if df.empty or df.shape[1] < 2 or len(df) < 2:
+                    logging.error(f"CSV file {file_path} is invalid or contains only one row of data.")
+                    return None
+
+                return df
+
+            except (pd.errors.ParserError, UnicodeDecodeError, pd.errors.EmptyDataError, OSError) as e:
+                logging.error(f"Failed to read CSV file {file_path}: {str(e)}")
+                return None
+
         elif file_extension in ['.xlsx', '.xls']:
             return pd.read_excel(file_path)
             

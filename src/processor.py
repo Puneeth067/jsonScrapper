@@ -14,13 +14,6 @@ def clean_html(text):
 def normalize_data(data, source_type='json'):
     """
     Normalize and clean data from different source types.
-    
-    Args:
-        data: The data to normalize (DataFrame or dict)
-        source_type: The type of the source data ('json', 'csv', 'xlsx')
-        
-    Returns:
-        DataFrame: Normalized data
     """
     # Convert data to DataFrame based on source type
     if source_type == 'json':
@@ -67,7 +60,7 @@ def normalize_data(data, source_type='json'):
         df["full name"] = ""
 
     # Clean up original name columns after creating Full Name if we combined them
-    if 'full name' in df.columns and df['full name'].iloc[0] != "":
+    if 'full name' in df.columns and not df.empty and df['full name'].iloc[0] != "":
         for col in ['first_name', 'last_name', 'first name', 'last name', 'name', 
                    'employee_first_name', 'employee_last_name', 'first', 'last']:
             if col in df.columns:
@@ -103,6 +96,8 @@ def normalize_data(data, source_type='json'):
         def assign_designation(exp):
             try:
                 exp = float(exp)
+                if pd.isna(exp) or exp == 0:
+                    return "Unknown"
                 if exp < 3:
                     return "System Engineer"
                 elif 3 <= exp <= 5:
@@ -113,8 +108,11 @@ def normalize_data(data, source_type='json'):
                     return "Lead"
             except (ValueError, TypeError):
                 return "Unknown"
+
         
+        df[found_exp_col] = pd.to_numeric(df[found_exp_col], errors='coerce').fillna(0).astype(int)
         df["designation"] = df[found_exp_col].apply(assign_designation)
+
         # Make sure we keep the experience column with a standardized name
         if found_exp_col != 'years_of_experience':
             df["years_of_experience"] = df[found_exp_col]
@@ -216,7 +214,7 @@ def normalize_data(data, source_type='json'):
     # Handle potential NaN values for Integer columns
     for col in ["age", "years_of_experience", "salary"]:
         if col in df.columns:
-            df[col] = df[col].fillna(0).astype(int)
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
     
     # Convert string columns
     string_columns = ["full name", "email", "gender", "job_title", "department", "designation"]
