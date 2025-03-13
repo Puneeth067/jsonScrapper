@@ -17,7 +17,7 @@ def normalize_data(data, source_type='json'):
     
     Args:
         data: The data to normalize (DataFrame or dict)
-        source_type: The type of the source data ('json', 'csv', 'excel')
+        source_type: The type of the source data ('json', 'csv', 'xlsx')
         
     Returns:
         DataFrame: Normalized data
@@ -28,22 +28,15 @@ def normalize_data(data, source_type='json'):
             logging.error("Invalid data format received for JSON.")
             return None
         df = pd.DataFrame(data["employees"])
-    elif source_type in ['csv', 'excel']:
+    elif source_type in ['csv', 'xlsx']:
         # For CSV and Excel, data should already be a DataFrame
         if not isinstance(data, pd.DataFrame):
             logging.error(f"Expected DataFrame for {source_type} but got {type(data)}")
             return None
         df = data.copy()
         
-        # Check if this is a flat CSV/Excel without nested structure
-        # Look for common patterns in column names to determine format
-        columns = df.columns.str.lower()
-        
-        # Some CSV/Excel files might have 'employee' as a prefix in column names
-        # Strip it if present consistently
-        if all('employee.' in col or col.startswith('employee_') for col in columns):
-            # Rename columns to remove 'employee.' or 'employee_' prefix
-            df.columns = [col.replace('employee.', '').replace('employee_', '') for col in df.columns]
+        # Log the original columns to understand what we're working with
+        logging.info(f"Original columns in {source_type} dataframe: {df.columns.tolist()}")
     else:
         # For any other type, try to use the data if it's already a DataFrame
         if isinstance(data, pd.DataFrame):
@@ -52,9 +45,6 @@ def normalize_data(data, source_type='json'):
             logging.error(f"Unsupported data type for normalization: {type(data)}")
             return None
     
-    # Log the columns for debugging
-    logging.info(f"Columns in dataframe: {df.columns.tolist()}")
-    
     # Standardize column names (convert to lowercase for case-insensitive matching)
     df.columns = [col.lower() for col in df.columns]
     
@@ -62,21 +52,30 @@ def normalize_data(data, source_type='json'):
     # Check if we have first_name and last_name columns for creating Full Name
     if 'first_name' in df.columns and 'last_name' in df.columns:
         df["full name"] = df["first_name"] + " " + df["last_name"]
-        # Drop the original name columns after creating Full Name
-        df = df.drop(columns=["first_name", "last_name"], errors="ignore")
     elif 'firstname' in df.columns and 'lastname' in df.columns:
         df["full name"] = df["firstname"] + " " + df["lastname"]
-        df = df.drop(columns=["firstname", "lastname"], errors="ignore")
     elif 'name' in df.columns:
         # If there's just a name column, use that as Full Name
         df["full name"] = df["name"]
-        df = df.drop(columns=["name"], errors="ignore")
+    # For CSV/Excel specific patterns - look for column patterns
+    elif 'employee_first_name' in df.columns and 'employee_last_name' in df.columns:
+        df["full name"] = df["employee_first_name"] + " " + df["employee_last_name"]
+    elif 'first name' in df.columns and 'last name' in df.columns:
+        df["full name"] = df["first name"] + " " + df["last name"]
     elif 'full name' not in df.columns:
         # If neither pattern exists, create an empty Full Name column
         df["full name"] = ""
+
+    # Clean up original name columns after creating Full Name if we combined them
+    if 'full name' in df.columns and df['full name'].iloc[0] != "":
+        for col in ['first_name', 'last_name', 'first name', 'last name', 'name', 
+                   'employee_first_name', 'employee_last_name', 'first', 'last']:
+            if col in df.columns:
+                df = df.drop(columns=[col], errors="ignore")
     
     # Process phone numbers (if column exists) with multiple possible column names
-    phone_cols = ['phone', 'phone_number', 'phonenumber', 'contact', 'telephone']
+    phone_cols = ['phone', 'phone_number', 'phonenumber', 'contact', 'telephone', 
+                  'employee_phone', 'employee_contact']
     found_phone_col = next((col for col in phone_cols if col in df.columns), None)
     
     if found_phone_col:
@@ -96,7 +95,8 @@ def normalize_data(data, source_type='json'):
         df["phone"] = "Not Available"
     
     # Assign designation based on experience (with multiple possible column names)
-    exp_cols = ['years_of_experience', 'experience', 'experience_years', 'years_experience', 'yoe']
+    exp_cols = ['years_of_experience','years of experience', 'experience', 'experience_years', 'years_experience', 'yoe',
+               'years', 'employee_experience', 'experience_yrs']
     found_exp_col = next((col for col in exp_cols if col in df.columns), None)
     
     if found_exp_col:
@@ -124,7 +124,7 @@ def normalize_data(data, source_type='json'):
         df["years_of_experience"] = 0
     
     # Handle salary column variations
-    salary_cols = ['salary', 'annual_salary', 'pay', 'compensation']
+    salary_cols = ['salary', 'annual_salary', 'pay', 'compensation', 'employee_salary']
     found_salary_col = next((col for col in salary_cols if col in df.columns), None)
     if found_salary_col and found_salary_col != 'salary':
         df["salary"] = df[found_salary_col]
@@ -133,7 +133,7 @@ def normalize_data(data, source_type='json'):
         df["salary"] = 0
         
     # Handle email column variations
-    email_cols = ['email', 'email_address', 'emailaddress', 'mail']
+    email_cols = ['email', 'email_address', 'emailaddress', 'mail', 'employee_email']
     found_email_col = next((col for col in email_cols if col in df.columns), None)
     if found_email_col and found_email_col != 'email':
         df["email"] = df[found_email_col]
@@ -142,7 +142,7 @@ def normalize_data(data, source_type='json'):
         df["email"] = ""
         
     # Handle gender column variations
-    gender_cols = ['gender', 'sex']
+    gender_cols = ['gender', 'sex', 'employee_gender']
     found_gender_col = next((col for col in gender_cols if col in df.columns), None)
     if found_gender_col and found_gender_col != 'gender':
         df["gender"] = df[found_gender_col]
@@ -151,7 +151,8 @@ def normalize_data(data, source_type='json'):
         df["gender"] = ""
         
     # Handle job title column variations
-    job_cols = ['job_title', 'jobtitle', 'title', 'position', 'role']
+    job_cols = ['job_title', 'jobtitle', 'job title', 'position', 'role', 'employee_jobtitle', 
+               'employee_title', 'employee_position', 'job']
     found_job_col = next((col for col in job_cols if col in df.columns), None)
     if found_job_col and found_job_col != 'job_title':
         df["job_title"] = df[found_job_col]
@@ -160,7 +161,7 @@ def normalize_data(data, source_type='json'):
         df["job_title"] = ""
         
     # Handle department column variations
-    dept_cols = ['department', 'dept', 'team']
+    dept_cols = ['department', 'dept', 'team', 'employee_department', 'employee_dept']
     found_dept_col = next((col for col in dept_cols if col in df.columns), None)
     if found_dept_col and found_dept_col != 'department':
         df["department"] = df[found_dept_col]
@@ -169,7 +170,7 @@ def normalize_data(data, source_type='json'):
         df["department"] = ""
         
     # Handle age column variations
-    age_cols = ['age', 'years_old']
+    age_cols = ['age', 'years_old', 'employee_age']
     found_age_col = next((col for col in age_cols if col in df.columns), None)
     if found_age_col and found_age_col != 'age':
         df["age"] = df[found_age_col]
@@ -189,6 +190,29 @@ def normalize_data(data, source_type='json'):
             else:
                 df[col] = ""
     
+    # Ensure id column exists and is proper
+    if "id" not in df.columns:
+        df["id"] = range(1, len(df) + 1)
+    else:
+        # Make sure id is numeric
+        try:
+            df["id"] = pd.to_numeric(df["id"], errors='coerce')
+            # Check if all values are NaN or 0
+            if df["id"].isna().all() or (df["id"] == 0).all():
+                # Create new IDs
+                df["id"] = range(1, len(df) + 1)
+            else:
+                # Fill any NaN values with new sequential IDs starting from max+1
+                max_id = df["id"].max()
+                missing_mask = df["id"].isna()
+                missing_count = missing_mask.sum()
+                if missing_count > 0:
+                    df.loc[missing_mask, "id"] = range(int(max_id)+1, int(max_id)+missing_count+1)
+                df["id"] = df["id"].fillna(0).astype(int)
+        except:
+            # If conversion fails, create new IDs
+            df["id"] = range(1, len(df) + 1)
+    
     # Handle potential NaN values for Integer columns
     for col in ["age", "years_of_experience", "salary"]:
         if col in df.columns:
@@ -204,19 +228,11 @@ def normalize_data(data, source_type='json'):
     if "phone" in df.columns:
         df["phone"] = df["phone"].astype(str)
     
-    # Ensure id column exists and is proper
-    if "id" not in df.columns:
-        df["id"] = range(1, len(df) + 1)
-    else:
-        # Make sure id is numeric
-        try:
-            df["id"] = pd.to_numeric(df["id"], errors='coerce').fillna(0).astype(int)
-        except:
-            # If conversion fails, create new IDs
-            df["id"] = range(1, len(df) + 1)
-    
     # Rename 'full name' to 'Full Name' for final output consistency
     df = df.rename(columns={'full name': 'Full Name'})
+    
+    # Print the final columns for debugging
+    logging.info(f"Final columns in dataframe: {df.columns.tolist()}")
     
     # Reorder columns in the exact specified order (keeping any additional columns at the end)
     final_expected_columns = ["id", "Full Name", "email", "phone", "gender", "age", 

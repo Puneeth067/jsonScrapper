@@ -75,7 +75,7 @@ if __name__ == "__main__":
         "scraper_input": {
             "scraper_name": "data_scraper",
             "run_scraper_id": "101",
-            "sources": ["employees_csv"]  # Specify sources or leave empty to process all
+            "sources": ["employees_json","employees_csv"]  # Specify sources or leave empty to process all
         }
     }
     result = lambdaHandler(inputDA, "")
