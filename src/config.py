@@ -9,7 +9,7 @@ API_SOURCES = {
         "id": 2,
         "url": "https://api.slingacademy.com/v1/sample-data/files/employees.csv",
         "type": "csv",
-    # },
+    },
     # "employees_xlsx": {
     #     "id": 3,
     #     "url": "https://api.slingacademy.com/v1/sample-data/files/employees.xlsx",
