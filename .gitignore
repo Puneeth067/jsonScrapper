@@ -27,6 +27,7 @@ ingestion/*
 !ingestion/config.json
 !ingestion/scraper.py
 !ingestion/processor.py
+!ingestion/src
 !ingestion/src/main.py
 !ingestion/src/tests.py
 !ingestion/__init__.py
