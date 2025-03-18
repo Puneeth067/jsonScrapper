@@ -21,20 +21,12 @@ pip install -r requirements.txt
 
 ### Run command
 
-```
-cd src
-```
-
 ```sh
-python main.py
+python -m ingestion.src.main
 ```
 
 ### Test Command
 
-```
-cd src
-```
-
 ```sh
-python -m unittest tests.py
+python -m unittest ingestion.src.tests
 ```

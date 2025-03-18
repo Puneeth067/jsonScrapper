@@ -29,7 +29,7 @@ ingestion/*
 !ingestion/processor.py
 !ingestion/src/main.py
 !ingestion/src/tests.py
-!ingestion/src/__init__.py
+!ingestion/__init__.py
 
 # Logs
 *.log
