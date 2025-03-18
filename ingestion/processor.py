@@ -1,11 +1,20 @@
 import pandas as pd
 import logging
 import os
+import json
 from bs4 import BeautifulSoup
 import pyarrow
-from config import INGESTION_DIR
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Load configuration from JSON file
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_path, 'r') as f:
+        return json.load(f)
+
+CONFIG = load_config()
+INGESTION_DIR = CONFIG["INGESTION_DIR"]
 
 def clean_html(text):
     """Remove HTML tags and return plain text."""
@@ -246,16 +255,12 @@ def normalize_data(data, source_type='json'):
 def save_data(df, source_id):
     """
     Save data to CSV and Parquet.
-    
-    Args:
-        df: DataFrame to save
-        source_id: Source identifier for filename
     """
     # Ensure ingestion directory exists
     os.makedirs(INGESTION_DIR, exist_ok=True)
     
-    csv_path = f"{INGESTION_DIR}{source_id}_processed.csv"
-    parquet_path = f"{INGESTION_DIR}{source_id}_processed.parquet"
+    csv_path = os.path.join(INGESTION_DIR, f"{source_id}_processed.csv")
+    parquet_path = os.path.join(INGESTION_DIR, f"{source_id}_processed.parquet")
 
     df.to_csv(csv_path, index=False)
     df.to_parquet(parquet_path, engine="pyarrow", index=False)

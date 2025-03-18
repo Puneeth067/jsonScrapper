@@ -3,9 +3,20 @@ import json
 import logging
 import os
 import pandas as pd
-from config import API_SOURCES, RETRY_COUNT, TIMEOUT, INGESTION_DIR
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
+# Load configuration from JSON file
+def load_config():
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_path, 'r') as f:
+        return json.load(f)
+
+CONFIG = load_config()
+API_SOURCES = CONFIG["API_SOURCES"]
+RETRY_COUNT = CONFIG["RETRY_COUNT"]
+TIMEOUT = CONFIG["TIMEOUT"]
+INGESTION_DIR = CONFIG["INGESTION_DIR"]
 
 def fetch_data(source_id):
     """
