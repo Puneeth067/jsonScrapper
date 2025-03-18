@@ -1,0 +1,17 @@
+{
+  "API_SOURCES": {
+    "employees_json": {
+      "id": 101,
+      "url": "https://api.slingacademy.com/v1/sample-data/files/employees.json",
+      "type": "json"
+    },
+    "employees_csv": {
+      "id": 102,
+      "url": "https://api.slingacademy.com/v1/sample-data/files/employees.csv",
+      "type": "csv"
+    }
+  },
+  "RETRY_COUNT": 3,
+  "TIMEOUT": 5,
+  "INGESTION_DIR": "./"
+}
