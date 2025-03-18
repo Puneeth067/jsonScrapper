@@ -63,11 +63,6 @@ def read_data_file(file_path):
     """
     Read the downloaded file based on its type and return the data.
     
-    Args:
-        file_path (str): Path to the downloaded file
-        
-    Returns:
-        dict/DataFrame: The data read from the file or None if failed
     """
     if not file_path or not os.path.exists(file_path):
         logging.error(f"File does not exist: {file_path}")

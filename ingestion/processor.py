@@ -266,3 +266,4 @@ def save_data(df, source_id):
     df.to_parquet(parquet_path, engine="pyarrow", index=False)
 
     logging.info(f"Data saved: {csv_path}, {parquet_path}")
+    
