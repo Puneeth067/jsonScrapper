@@ -116,17 +116,18 @@ def normalize_data(data, source_type='json'):
     # Handle name variations
     # Check if we have first_name and last_name columns for creating Full Name
     if 'first_name' in df.columns and 'last_name' in df.columns:
-        df["full name"] = df["first_name"] + " " + df["last_name"]
+        # Fix: Fill NaN/None values with empty string before concatenation
+        df["full name"] = df["first_name"].fillna("") + " " + df["last_name"].fillna("")
     elif 'firstname' in df.columns and 'lastname' in df.columns:
-        df["full name"] = df["firstname"] + " " + df["lastname"]
+        df["full name"] = df["firstname"].fillna("") + " " + df["lastname"].fillna("")
     elif 'name' in df.columns:
         # If there's just a name column, use that as Full Name
         df["full name"] = df["name"]
     # For CSV/Excel specific patterns - look for column patterns
     elif 'employee_first_name' in df.columns and 'employee_last_name' in df.columns:
-        df["full name"] = df["employee_first_name"] + " " + df["employee_last_name"]
+        df["full name"] = df["employee_first_name"].fillna("") + " " + df["employee_last_name"].fillna("")
     elif 'first name' in df.columns and 'last name' in df.columns:
-        df["full name"] = df["first name"] + " " + df["last name"]
+        df["full name"] = df["first name"].fillna("") + " " + df["last name"].fillna("")
     elif 'full name' not in df.columns:
         # If neither pattern exists, create an empty Full Name column
         df["full name"] = ""

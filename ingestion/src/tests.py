@@ -4,6 +4,7 @@ import sys
 import json
 import shutil
 from unittest.mock import patch, MagicMock
+import requests
 
 # Add the parent directory to sys.path to import from ingestion
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -73,12 +74,19 @@ class TestIngestion(unittest.TestCase):
     @patch('requests.get')
     def test_download_retry_mechanism(self, mock_get):
         """Test Case 1: Verify retry mechanism works"""
-        # First two calls will fail, third will succeed
-        mock_get.side_effect = [
-            Exception("Connection error"),
-            Exception("Timeout error"),
-            MagicMock(status_code=200, content=b'{"employees": [{"id": 1}]}')
-        ]
+        # Create mock responses - first two fail, third succeeds
+        mock_fail1 = MagicMock()
+        mock_fail1.raise_for_status.side_effect = requests.exceptions.ConnectionError("Connection error")
+        
+        mock_fail2 = MagicMock()
+        mock_fail2.raise_for_status.side_effect = requests.exceptions.Timeout("Timeout error")
+        
+        mock_success = MagicMock()
+        mock_success.status_code = 200
+        mock_success.content = b'{"employees": [{"id": 1}]}'
+        
+        # Set the side effect sequence
+        mock_get.side_effect = [mock_fail1, mock_fail2, mock_success]
         
         # Test function
         source_id = "employees_json"

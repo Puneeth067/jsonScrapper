@@ -1,4 +1,4 @@
-# JSON Data Scraper
+# Data Scraper
 
 ## Overview
 
