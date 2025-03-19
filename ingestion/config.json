@@ -13,5 +13,5 @@
   },
   "RETRY_COUNT": 3,
   "TIMEOUT": 5,
-  "INGESTION_DIR": "./"
+  "RAW_DATA_DIR": "./ingestion/raw_data/"
 }

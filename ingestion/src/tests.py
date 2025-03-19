@@ -13,7 +13,7 @@ import logging
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ingestion.scraper import fetch_data, read_data_file, fetch_employee_data
-from ingestion.processor import normalize_data, save_data
+from processing.processor import normalize_data, save_data
 from ingestion.src.main import process_source, lambdaHandler
 
 # Configure logging

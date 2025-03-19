@@ -1,0 +1,15 @@
+{
+  "RAW_DATA_SOURCES": {
+    "employees_json": {
+      "id": 101,
+      "path": "./ingestion/raw_data/employees_json.json",
+      "type": "json"
+    },
+    "employees_csv": {
+      "id": 102,
+      "path": "./ingestion/raw_data/employees_csv.csv",
+      "type": "csv"
+    }
+  },
+  "PROCESSED_DATA_DIR": "./processing/processed_data/"
+}
