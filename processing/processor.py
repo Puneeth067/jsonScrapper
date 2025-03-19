@@ -14,11 +14,74 @@ def load_config():
         return json.load(f)
 
 CONFIG = load_config()
-INGESTION_DIR = CONFIG["INGESTION_DIR"]
+PROCESSED_DATA_DIR = CONFIG["PROCESSED_DATA_DIR"]
 
 def clean_html(text):
     """Remove HTML tags and return plain text."""
     return BeautifulSoup(text, "lxml").text.strip() if pd.notna(text) and "<" in str(text) and ">" in str(text) else text
+
+def read_raw_data(source_id):
+    """
+    Read the raw data file based on its type and return the data.
+    """
+    if source_id not in CONFIG["RAW_DATA_SOURCES"]:
+        logging.error(f"Source ID '{source_id}' not found in configuration.")
+        return None
+    
+    source_config = CONFIG["RAW_DATA_SOURCES"][source_id]
+    file_path = source_config["path"]
+    file_type = source_config["type"]
+    
+    if not os.path.exists(file_path):
+        logging.error(f"File does not exist: {file_path}")
+        logging.info(f"Current working directory: {os.getcwd()}")
+        return None
+    
+    try:
+        if file_type == 'json':
+            with open(file_path, 'r') as f:
+                data = json.load(f)
+                
+                # If it's a list, wrap it in a dict with 'employees' key
+                if isinstance(data, list):
+                    return {"employees": data}
+                return data
+                
+        elif file_type == "csv":
+            try:
+                # Open the file manually to check the first few lines before passing it to Pandas
+                with open(file_path, "r", encoding="utf-8") as f:
+                    lines = [line.strip() for line in f.readlines()]
+
+                # If the file is empty or has only a single row (header with no data), return None
+                if not lines or len(lines) < 2:
+                    logging.error(f"CSV file {file_path} is empty or contains only a header.")
+                    return None
+
+                # Load CSV into a DataFrame
+                df = pd.read_csv(file_path, dtype=str, on_bad_lines="skip")
+
+                # Ensure valid CSV: must have at least 2 columns and 2 rows (header + 1 row of data)
+                if df.empty or df.shape[1] < 2 or len(df) < 2:
+                    logging.error(f"CSV file {file_path} is invalid or contains only one row of data.")
+                    return None
+
+                return df
+
+            except (pd.errors.ParserError, UnicodeDecodeError, pd.errors.EmptyDataError, OSError) as e:
+                logging.error(f"Failed to read CSV file {file_path}: {str(e)}")
+                return None
+
+        elif file_type in ['xlsx', 'xls']:
+            return pd.read_excel(file_path)
+            
+        else:
+            logging.error(f"Unsupported file format: {file_type}")
+            return None
+            
+    except Exception as e:
+        logging.error(f"Error reading file {file_path}: {e}")
+        return None
 
 def normalize_data(data, source_type='json'):
     """
@@ -256,14 +319,13 @@ def save_data(df, source_id):
     """
     Save data to CSV and Parquet.
     """
-    # Ensure ingestion directory exists
-    os.makedirs(INGESTION_DIR, exist_ok=True)
+    # Ensure processed data directory exists
+    os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
     
-    csv_path = os.path.join(INGESTION_DIR, f"{source_id}_processed.csv")
-    parquet_path = os.path.join(INGESTION_DIR, f"{source_id}_processed.parquet")
+    csv_path = os.path.join(PROCESSED_DATA_DIR, f"{source_id}_processed.csv")
+    parquet_path = os.path.join(PROCESSED_DATA_DIR, f"{source_id}_processed.parquet")
 
     df.to_csv(csv_path, index=False)
     df.to_parquet(parquet_path, engine="pyarrow", index=False)
 
-    logging.info(f"Data saved: {csv_path}, {parquet_path}")
-    
+    logging.info(f"Processed data saved: {csv_path}, {parquet_path}")

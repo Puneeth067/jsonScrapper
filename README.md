@@ -21,8 +21,16 @@ pip install -r requirements.txt
 
 ### Run command
 
+#### Ingestion:
+
 ```sh
 python -m ingestion.src.main
+```
+
+#### Processing:
+
+```
+python -m processing.src.main
 ```
 
 ### Test Command

@@ -23,14 +23,10 @@ ENV/
 .ipynb_checkpoints
 
 # Project specific - keep folder structure but ignore contents
-ingestion/*
-!ingestion/config.json
-!ingestion/scraper.py
-!ingestion/processor.py
-!ingestion/src
-!ingestion/src/main.py
-!ingestion/src/tests.py
-!ingestion/__init__.py
+ingestion/raw_data/*
+!ingestion/raw_data/.gitkeep
+processing/processed_data/*
+!processing/processed_data/.gitkeep
 
 # Logs
 *.log
