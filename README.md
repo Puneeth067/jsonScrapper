@@ -23,8 +23,9 @@ pip install -r requirements.txt
 
 #### Ingestion:
 
-```sh
+```
 python -m ingestion.src.main
+
 ```
 
 #### Processing:
@@ -35,6 +36,12 @@ python -m processing.src.main
 
 ### Test Command
 
-```sh
+```
 python -m unittest ingestion.src.tests
+
+```
+
+```
+python -m unittest processing.src.tests
+
 ```
