@@ -35,7 +35,7 @@ def fetch_data(source_id):
         try:
             logging.info(f"Fetching data from {url}")
             response = requests.get(url, timeout=TIMEOUT)
-            response.raise_for_status()
+            response.raise_for_status() 
             
             # Create raw_data directory if it doesn't exist
             os.makedirs(RAW_DATA_DIR, exist_ok=True)
@@ -51,10 +51,11 @@ def fetch_data(source_id):
             return file_path
             
         except requests.exceptions.RequestException as e:
-            logging.error(f"Request failed: {e}")
+            attempt += 1
+            logging.error(f"Request failed (attempt {attempt}/{RETRY_COUNT}): {e}")
             
-        attempt += 1
-        logging.info(f"Retrying... ({attempt}/{RETRY_COUNT})")
-    
-    logging.error("Max retries reached. Failed to fetch data.")
-    return None
+            if attempt < RETRY_COUNT:
+                logging.info(f"Retrying in a moment...")
+            else:
+                logging.error("Max retries reached. Failed to fetch data.")
+                return None
